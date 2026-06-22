@@ -27,7 +27,7 @@ namespace doc {
 // 'algo_line_snap' and 'algo_line_snap_endpoint'.
 AlgoLineWithAlgoPixel algo_line_snap_using_step(int fixedStepTilts)
 {
-  fixedStepTilts = std::clamp(fixedStepTilts, 2, 256);
+  fixedStepTilts = std::clamp(fixedStepTilts, 1, 256);
   return [fixedStepTilts](int x1, int y1, int x2, int y2, void* data, AlgoPixel proc) {
     algo_line_snap(x1, y1, x2, y2, fixedStepTilts, data, proc);
   };

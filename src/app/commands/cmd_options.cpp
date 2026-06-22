@@ -782,7 +782,7 @@ public:
       keepClosedSpriteOnMemoryFor()->findItemIndexByValue(
         base::convert_to<std::string>(m_pref.general.keepClosedSpriteOnMemoryFor())));
 
-    fixedStepTilt()->setTextf("%d", std::clamp(m_pref.editor.fixedStepTilt(), 2, 256));
+    fixedStepTilt()->setTextf("%d", std::clamp(m_pref.editor.fixedStepTilt(), 1, 256));
 
     // If the platform supports native cursors...
     if ((int(m_system->capabilities()) & int(os::Capabilities::CustomMouseCursor)) != 0) {
@@ -931,7 +931,7 @@ public:
     m_pref.editor.autoScrollSpeed(autoScrollSpeed()->getValue());
     m_pref.editor.rightClickMode(
       static_cast<app::gen::RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
-    m_pref.editor.fixedStepTilt(std::clamp(fixedStepTilt()->textInt(), 2, 256));
+    m_pref.editor.fixedStepTilt(std::clamp(fixedStepTilt()->textInt(), 1, 256));
     if (m_samplingSelector)
       m_samplingSelector->save();
     m_pref.cursor.paintingCursorType(

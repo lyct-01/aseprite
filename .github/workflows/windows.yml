@@ -1,0 +1,64 @@
+name: Simple Windows Build
+
+on:
+  workflow_dispatch:    # 手动触发（推荐）
+  # push:               # 如需自动触发可取消注释
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 检出代码（含子模块）
+        uses: actions/checkout@v7
+        with:
+          submodules: 'recursive'
+
+      - name: 下载 Skia 库（GUI 必需）
+        shell: bash
+        run: |
+          this_dir=$(cygpath "${{ github.workspace }}")
+          skia_url=$(source "$this_dir/laf/misc/skia-url.sh" | xargs)
+          skia_file=$(basename "$skia_url")
+          curl --ssl-revoke-best-effort -L -o "$skia_file" "$skia_url"
+          unzip "$skia_file" -d skia
+
+      - name: 安装 Ninja
+        uses: aseprite/get-ninja@main
+
+      - name: 配置 MSVC（x64）
+        uses: TheMrMilchmann/setup-msvc-dev@v4
+        with:
+          arch: x64
+
+      - name: 生成构建文件（CMake）
+        shell: bash
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DENABLE_TESTS=OFF \
+            -DENABLE_SCRIPTING=ON \
+            -DENABLE_CCACHE=OFF \
+            -DLAF_BACKEND=skia \
+            -DSKIA_DIR=$(realpath skia) \
+            -DSKIA_LIBRARY_DIR=$(realpath skia/out/Release-x64)
+
+      - name: 编译
+        shell: bash
+        run: |
+          cd build && ninja
+
+      - name: 列出产物（调试用）
+        shell: bash
+        run: |
+          echo "=== build/bin/ 内容 ==="
+          ls -l build/bin/ || echo "目录不存在或为空"
+          echo "=== build/ 目录结构（仅一级） ==="
+          ls -l build/
+
+      - name: 上传编译产物（Artifact）
+        uses: actions/upload-artifact@v4
+        with:
+          name: aseprite-windows
+          path: build/bin/
